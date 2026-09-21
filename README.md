@@ -1,193 +1,210 @@
-# 📦 WMS Joinville
+# WMS Joinville - Sistema de Gestão de Armazém
 
-> Sistema de Gestão de Armazém (Warehouse Management System) construído em **30 dias** de commits diários, com foco nas dores reais do polo logístico de **Joinville/SC**.
+> Sistema de Gestão de Armazém (Warehouse Management System) desenvolvido em **Java 17** e **Spring Boot 3** durante um desafio de **30 dias de commits diários**, inspirado nos cenários e regras operacionais do polo industrial e logístico de Joinville/SC.
 
-![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![Java 17](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot 3.2](https://img.shields.io/badge/Spring_Boot-3.2-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-3.9-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
-![H2](https://img.shields.io/badge/H2-Database-1021FF?style=for-the-badge&logo=databricks&logoColor=white)
+![H2 Database](https://img.shields.io/badge/H2-Database-1021FF?style=for-the-badge&logo=databricks&logoColor=white)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)
-![Status](https://img.shields.io/badge/status-em_desenvolvimento-yellow?style=for-the-badge)
-![Desafio](https://img.shields.io/badge/desafio-30_dias-blueviolet?style=for-the-badge)
-![Licença](https://img.shields.io/badge/licença-MIT-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 
 ---
 
-## 📑 Sumário
+## Sumário
 
-- [Contexto e problema](#-contexto-e-problema)
-- [Pilares do sistema](#-pilares-do-sistema)
-- [Stack tecnológica](#-stack-tecnológica)
-- [Arquitetura](#-arquitetura)
-- [Como executar](#-como-executar)
-- [Roadmap de 30 dias](#-roadmap-de-30-dias)
-- [Convenções de commit](#-convenções-de-commit)
-- [Licença](#-licença)
-
----
-
-## 🏭 Contexto e problema
-
-Joinville concentra um dos maiores parques industriais e logísticos do Sul do Brasil: metal-mecânico, autopeças, eletroeletrônicos, plásticos, linha branca, têxtil e um crescente número de centros de distribuição instalados ao longo da BR-101 e da BR-280, com acesso ao Porto de Itapoá e ao Porto de São Francisco do Sul.
-
-Esse ambiente cria desafios operacionais recorrentes para armazéns de pequeno e médio porte, que muitas vezes ainda operam com planilhas:
-
-| Dor operacional | Consequência |
-|---|---|
-| Endereçamento fixo e manual | Vagas subutilizadas, produtos "perdidos" e picking lento |
-| Falta de controle PEPS/FIFO | Lotes antigos ficam parados até vencer ou ficar obsoletos |
-| Produtos com validade sem monitoramento | Perdas financeiras e risco sanitário/regulatório |
-| Mistura de cargas incompatíveis (inflamáveis, frágeis, refrigerados) | Risco de acidentes e não conformidade |
-| Sem histórico de movimentação | Divergências de inventário sem rastreabilidade |
-
-O **WMS Joinville** nasce para resolver essas dores com uma base sólida, testável e evolutiva.
+- [Contexto e Problema](#contexto-e-problema)
+- [Pilares do Sistema](#pilares-do-sistema)
+- [Stack Tecnológica](#stack-tecnológica)
+- [Arquitetura de Pastas](#arquitetura-de-pastas)
+- [Como Executar](#como-executar)
+- [Roadmap de 30 Dias](#roadmap-de-30-dias)
+- [Convenções de Commit](#convenções-de-commit)
+- [Licença](#licença)
 
 ---
 
-## 🎯 Pilares do sistema
+## Contexto e Problema
 
-### 1. Endereçamento dinâmico
-Em vez de posições fixas por produto, o sistema **sugere a melhor vaga disponível** no momento do recebimento, considerando:
+Joinville abriga um dos maiores ecossistemas industriais e logísticos do Sul do país, englobando setores metal-mecânico, autopeças, químicos e plásticos. Com o fluxo intenso ligado à BR-101, BR-280 e proximidade com os portos de Itapoá e São Francisco do Sul, a eficiência operacional de estocagem é um fator crítico.
 
-- Categoria do produto e zona de estocagem compatível (seco, refrigerado, inflamável, frágil, etc.)
-- Status da vaga (`LIVRE`, `OCUPADA`, `RESERVADA`, `BLOQUEADA`, `EM_MANUTENCAO`)
-- Proximidade com a doca e giro do item
-- Capacidade de peso e volume da vaga
+Este projeto simula e resolve gargalos comuns em armazéns que dependem de processos manuais:
 
-Endereço lógico no formato **Rua-Prédio-Nível-Apartamento** (ex.: `A-03-02-04`).
-
-### 2. PEPS / FIFO (Primeiro que Entra, Primeiro que Sai)
-A baixa de estoque respeita a ordem cronológica de entrada dos lotes. Para itens perecíveis, o critério evolui para **FEFO** (First Expired, First Out), priorizando a menor data de validade.
-
-### 3. Alertas automáticos com `@Scheduled`
-Rotinas agendadas que monitoram o armazém sem intervenção humana:
-
-- ⏰ Lotes próximos do vencimento
-- 📉 Produtos abaixo do estoque mínimo
-- 🔒 Vagas bloqueadas por tempo excessivo
+| Desafio Operacional | Impacto Negativo | Solução no WMS |
+|---|---|---|
+| Endereçamento manual fixo | Vagas subutilizadas e perda de tempo na busca | Algoritmo de sugestão de vaga por categoria |
+| Ausência de controle de lote | Retenção de produtos antigos e perdas por validade | Regras estritas de saída PEPS/FIFO e FEFO |
+| Monitoramento manual de itens | Falhas humanas em alertas de estoque e vencimento | Agendamento automatizado via `@Scheduled` |
+| Mistura de cargas incompatíveis | Risco operacional e descumprimento de normas | Mapeamento por zonas de estocagem segregadas |
 
 ---
 
-## 🛠 Stack tecnológica
+## Pilares do Sistema
+
+### 1. Endereçamento Dinâmico (Putaway)
+O sistema analisa as características do item no momento do recebimento e sugere a posição ideal considerando:
+* Categoria do produto e zonas compatíveis (Secos, Refrigerados, Inflamáveis, Frágeis, etc.).
+* Capacidade e status da vaga (`LIVRE`, `OCUPADA`, `RESERVADA`, `BLOQUEADA`).
+* Estrutura visual padronizada de endereçamento: **Rua - Prédio - Nível - Apartamento** (ex: `A-03-02-04`).
+
+### 2. Controle de Saída PEPS / FIFO e FEFO
+* **PEPS / FIFO (First In, First Out):** Prioriza a saída dos lotes com data de entrada mais antiga para produtos gerais.
+* **FEFO (First Expired, First Out):** Aplica prioridade máxima aos lotes com menor prazo de validade para itens perecíveis e farmacêuticos.
+
+### 3. Processos Automatizados (`@Scheduled`)
+Tarefas em segundo plano executadas periodicamente para auditoria de estoque:
+* Varredura diária de produtos próximos do vencimento.
+* Notificação de itens operando abaixo do estoque mínimo de segurança.
+* Liberação ou alerta de vagas bloqueadas há muito tempo.
+
+---
+
+## Stack Tecnológica
 
 | Camada | Tecnologia |
 |---|---|
-| Linguagem | Java 17 |
-| Framework | Spring Boot 3.2 |
-| API REST | Spring Web |
-| Persistência | Spring Data JPA + Hibernate |
-| Banco de dados | H2 (em memória, desenvolvimento) |
-| Validação | Jakarta Bean Validation |
-| Visão | Thymeleaf |
-| Produtividade | Lombok |
-| Build | Maven |
-| Testes | JUnit 5 + Spring Boot Test |
+| **Linguagem** | Java 17 |
+| **Framework** | Spring Boot 3.2+ |
+| **Persistência** | Spring Data JPA + Hibernate |
+| **Banco de Dados** | H2 Database (Desenvolvimento em memória) |
+| **Validação** | Jakarta Bean Validation |
+| **Camada Visão** | Thymeleaf + Bootstrap 5 |
+| **Produtividade** | Lombok |
+| **Build & Testes** | Maven 3.9+ / JUnit 5 |
 
 ---
 
-## 🧱 Arquitetura
+## Arquitetura de Pastas
 
-Arquitetura em camadas, com separação clara de responsabilidades:
+Organização em camadas separadas por responsabilidades do domínio Spring:
 
-```
 com.logistica.wms
-├── config         # Configurações (beans, OpenAPI, agendamentos)
-├── controller     # Endpoints REST e controllers MVC
+├── config         # Configurações de beans e agendamentos
+├── controller     # Endpoints REST e controllers Thymeleaf
 ├── domain
-│   ├── enums      # CategoriaProduto, StatusVaga, ...
-│   └── model      # Entidades JPA
-├── dto            # Objetos de entrada/saída da API
-├── exception      # Exceções de negócio e handler global
+│   ├── enums      # Domínios fixos (CategoriaProduto, StatusVaga)
+│   └── model      # Entidades do banco de dados (JPA)
+├── dto            # Data Transfer Objects
+├── exception      # Exceções customizadas e RestControllerAdvice
 ├── repository     # Interfaces Spring Data JPA
-├── scheduler      # Tarefas @Scheduled
-└── service        # Regras de negócio
-```
+├── scheduler      # Rotinas de auditoria agendadas
+└── service        # Lógica e regras de negócio
+
 
 ---
 
-## 🚀 Como executar
+## Como Executar
 
-**Pré-requisitos:** JDK 17+ e Maven 3.9+.
+### Pré-requisitos
+* **JDK 17** ou superior instalado.
+* **Maven 3.9+** configurado (ou via wrapper).
 
 ```bash
-# Clonar o repositório
-git clone https://github.com/SEU_USUARIO/wms-joinville.git
-cd wms-joinville
+# 1. Clonar o repositório
+git clone https://github.com/NycolasCunha/WMS-Gest-o-de-Armaz-m-.git
 
-# Executar os testes
+# 2. Entrar na pasta do projeto
+cd WMS-Gest-o-de-Armaz-m-
+
+# 3. Executar a bateria de testes unitários
 mvn test
 
-# Subir a aplicação
+# 4. Executar a aplicação
 mvn spring-boot:run
+Após a inicialização:
+
+Aplicação Web: http://localhost:8080
+
+Console Banco H2: http://localhost:8080/h2-console
+
+JDBC URL: jdbc:h2:mem:wmsdb
+
+Usuário: sa
+
+Senha: (deixar em branco)
 ```
+## Roadmap de 30 Dias
 
-Após iniciar:
+Semana 1 — Estrutura e Domínio
 
-- Aplicação: http://localhost:8080
-- Console do H2: http://localhost:8080/h2-console
-  - JDBC URL: `jdbc:h2:mem:wmsdb`
-  - Usuário: `sa`
-  - Senha: *(vazia)*
+[x] Dia 01 — Configuração inicial, estrutura Maven e Enums de domínio.
 
----
+[ ] Dia 02 — Criação da entidade Produto e ProdutoRepository.
 
-## 🗓 Roadmap de 30 dias
+[ ] Dia 03 — Criação da entidade Vaga (endereçamento lógico).
 
-### Semana 1 — Fundação do domínio
-- [x] **Dia 01** — Setup do projeto, configuração e enums de domínio
-- [ ] **Dia 02** — Entidade `Produto` e `ProdutoRepository`
-- [ ] **Dia 03** — Entidade `Vaga` com endereço Rua-Prédio-Nível-Apartamento
-- [ ] **Dia 04** — Entidade `Lote` (validade, quantidade, data de entrada)
-- [ ] **Dia 05** — DTOs e Bean Validation
-- [ ] **Dia 06** — CRUD de Produto (Service + Controller REST)
-- [ ] **Dia 07** — Refatoração, testes unitários e revisão da semana
+[ ] Dia 04 — Entidade Lote (controle de validade e saldo).
 
-### Semana 2 — Endereçamento e recebimento
-- [ ] **Dia 08** — CRUD de Vagas e geração em massa de endereços
-- [ ] **Dia 09** — Algoritmo de endereçamento dinâmico (sugestão de vaga por categoria)
-- [ ] **Dia 10** — Recebimento de mercadoria (entrada)
-- [ ] **Dia 11** — Armazenagem (put-away) com atualização de status da vaga
-- [ ] **Dia 12** — Histórico de movimentações (kardex)
-- [ ] **Dia 13** — Tratamento global de exceções (`@RestControllerAdvice`)
-- [ ] **Dia 14** — Testes de integração e revisão da semana
+[ ] Dia 05 — Mapeamento DTOs e regras de Bean Validation.
 
-### Semana 3 — Saída, PEPS/FIFO e picking
-- [ ] **Dia 15** — Seleção de lotes por PEPS/FIFO
-- [ ] **Dia 16** — Baixa de estoque respeitando PEPS
-- [ ] **Dia 17** — FEFO para produtos perecíveis
-- [ ] **Dia 18** — Pedido de saída e expedição
-- [ ] **Dia 19** — Geração de lista de picking
-- [ ] **Dia 20** — Separação e conferência
-- [ ] **Dia 21** — Refatoração, cobertura de testes e revisão da semana
+[ ] Dia 06 — Implementação do Service e Controller REST de Produtos.
 
-### Semana 4 — Automação, interface e entrega
-- [ ] **Dia 22** — `@Scheduled`: alerta de lotes próximos do vencimento
-- [ ] **Dia 23** — `@Scheduled`: alerta de estoque mínimo
-- [ ] **Dia 24** — Inventário cíclico
-- [ ] **Dia 25** — Dashboard com Thymeleaf
-- [ ] **Dia 26** — Telas de cadastro e consulta com Thymeleaf
-- [ ] **Dia 27** — Relatório de ocupação do armazém
-- [ ] **Dia 28** — Documentação da API com OpenAPI/Swagger
-- [ ] **Dia 29** — Dockerfile, docker-compose e perfil PostgreSQL
-- [ ] **Dia 30** — Documentação final, revisão e release `v1.0.0`
+[ ] Dia 07 — Testes unitários do domínio e revisão semanal.
 
----
+Semana 2 — Endereçamento e Recebimento
+[ ] Dia 08 — Gerenciamento de vagas e geração de endereços em massa.
 
-## ✍️ Convenções de commit
+[ ] Dia 09 — Algoritmo de sugestão de vaga por categoria.
 
-Seguimos o padrão [Conventional Commits](https://www.conventionalcommits.org/pt-br/):
+[ ] Dia 10 — Fluxo de entrada e recebimento de mercadorias.
 
-| Prefixo | Uso |
-|---|---|
-| `feat:` | Nova funcionalidade |
-| `fix:` | Correção de bug |
-| `refactor:` | Refatoração sem mudança de comportamento |
-| `test:` | Criação ou ajuste de testes |
-| `docs:` | Documentação |
-| `chore:` | Configuração, build e manutenção |
+[ ] Dia 11 — Processo de armazenagem (Putaway) e atualização de status.
 
----
+[ ] Dia 12 — Histórico de movimentações (Kardex).
 
-## 📄 Licença
+[ ] Dia 13 — Handler global de tratamento de exceções.
 
-Distribuído sob a licença MIT. Consulte o arquivo `LICENSE` para mais informações.
+[ ] Dia 14 — Testes de integração do fluxo de recebimento.
+
+Semana 3 — Regras PEPS/FEFO e Separação
+[ ] Dia 15 — Algoritmo de seleção de lotes por PEPS/FIFO.
+
+[ ] Dia 16 — Baixa de estoque automatizada por ordem de entrada.
+
+[ ] Dia 17 — Implementação da priorização FEFO para perecíveis.
+
+[ ] Dia 18 — Fluxo de ordens de saída e expedição.
+
+[ ] Dia 19 — Geração de listas de separação (Picking List).
+
+[ ] Dia 20 — Etapa de conferência e baixa física.
+
+[ ] Dia 21 — Refatoração e expansão de suíte de testes.
+
+Semana 4 — Alertas, Interface e Finalização
+[ ] Dia 22 — Tarefa agendada (@Scheduled) para alerta de vencimento.
+
+[ ] Dia 23 — Tarefa agendada para auditoria de estoque mínimo.
+
+[ ] Dia 24 — Módulo de inventário cíclico.
+
+[ ] Dia 25 — Dashboard visual do armazém com Thymeleaf.
+
+[ ] Dia 26 — Interface web para consulta e operações.
+
+[ ] Dia 27 — Relatórios operacionais e taxa de ocupação.
+
+[ ] Dia 28 — Documentação da API com OpenAPI/Swagger.
+
+[ ] Dia 29 — Dockerfile e preparação do ambiente de produção.
+
+[ ] Dia 30 — Revisão final, documentação e Release v1.0.0.
+###
+## Convenções de Commit
+
+Este repositório adota o padrão Conventional Commits:
+
+feat: Novas funcionalidades.
+
+fix: Correção de bugs.
+
+refactor: Alterações de código sem modificação de comportamento.
+
+test: Adição ou ajuste de testes unitários/integração.
+
+docs: Atualizações na documentação.
+
+chore: Tarefas de manutenção, dependências e configurações do projeto.
+###
+Licença
+Este projeto está sob a licença MIT.
