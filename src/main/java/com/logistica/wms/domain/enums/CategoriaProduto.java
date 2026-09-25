@@ -33,17 +33,10 @@ public enum CategoriaProduto {
     private final boolean controlaValidade;
     private final boolean exigeAreaSegregada;
 
-    /**
-     * Indica se a categoria exige armazenagem com temperatura controlada.
-     */
     public boolean exigeControleTemperatura() {
         return temperaturaMinima != null && temperaturaMaxima != null;
     }
 
-    /**
-     * Verifica se uma temperatura (em °C) está dentro da faixa aceita pela categoria.
-     * Categorias em temperatura ambiente aceitam qualquer valor.
-     */
     public boolean aceitaTemperatura(int temperaturaCelsius) {
         if (!exigeControleTemperatura()) {
             return true;
@@ -51,9 +44,6 @@ public enum CategoriaProduto {
         return temperaturaCelsius >= temperaturaMinima && temperaturaCelsius <= temperaturaMaxima;
     }
 
-    /**
-     * Retorna todas as categorias armazenadas em uma mesma zona.
-     */
     public static List<CategoriaProduto> porZona(String zonaEstocagem) {
         return Arrays.stream(values())
                 .filter(categoria -> categoria.zonaEstocagem.equalsIgnoreCase(zonaEstocagem))

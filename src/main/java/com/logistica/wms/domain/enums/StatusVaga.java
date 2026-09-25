@@ -25,23 +25,14 @@ public enum StatusVaga {
     private final String descricao;
     private final String detalhe;
 
-    /**
-     * Indica se a vaga pode receber uma nova armazenagem imediatamente.
-     */
     public boolean estaDisponivel() {
         return this == LIVRE;
     }
 
-    /**
-     * Indica se a vaga está fora de operação (não deve ser sugerida no endereçamento).
-     */
     public boolean estaIndisponivelParaOperacao() {
         return this == BLOQUEADA || this == EM_MANUTENCAO;
     }
 
-    /**
-     * Valida se a transição de estado é permitida pelas regras do armazém.
-     */
     public boolean podeTransitarPara(StatusVaga destino) {
         if (destino == null || destino == this) {
             return false;
